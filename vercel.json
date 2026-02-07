@@ -1,1 +1,1 @@
-{"rewrites": [{"source": "/(.*)", "destination": "/"}]}
+{\n  "buildCommand": "npm run build --prefix subdirectory",\n  "outputDirectory": "biosync-_-smart-emergency-health-card 2/dist",\n  "rewrites": [\n    {\n      "source": "/((?!api|_next/static|_next/image|favicon.ico).*)",\n      "destination": "/index.html"\n    }\n  ]\n}

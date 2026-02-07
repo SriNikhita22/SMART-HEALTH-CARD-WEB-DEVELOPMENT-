@@ -1,0 +1,1 @@
+{\n  "routes": [\n    {\n      "src": "/(.*)",\n      "dest": "/biosync/$1"\n    }\n  ]\n}

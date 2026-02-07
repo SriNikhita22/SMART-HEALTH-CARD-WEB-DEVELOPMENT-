@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RESCUE PROTOCOL | BioSync Medical Identity</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --danger: #ef4444;
+      --warning: #facc15;
+      --success: #22c55e;
+      --bg: #000000;
+    }
+    body { 
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: #ffffff;
+      margin: 0;
+      padding-bottom: 15rem;
+      -webkit-font-smoothing: antialiased;
+    }
+    .flash-critical {
+      animation: flash 1s infinite;
+    }
+    @keyframes flash {
+      0%, 100% { background-color: var(--danger); }
+      50% { background-color: #7f1d1d; }
+    }
+    .label-caps { font-size: 0.8rem; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; display: block; }
+    .data-text { font-weight: 900; font-size: 2rem; line-height: 1.1; letter-spacing: -0.03em; }
+    .blood-giant { font-size: 9rem; font-weight: 900; line-height: 1; color: var(--danger); text-shadow: 0 0 40px rgba(239, 68, 68, 0.4); }
+    
+    .section-card { border-radius: 2.5rem; padding: 2.5rem; border-width: 3px; }
+    .section-red { background-color: rgba(239, 68, 68, 0.12); border-color: var(--danger); }
+    .section-yellow { background-color: rgba(250, 204, 21, 0.12); border-color: var(--warning); }
+    .section-green { background-color: rgba(34, 197, 94, 0.12); border-color: var(--success); }
+
+    #loadingView {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: radial-gradient(circle at center, #1e1b4b 0%, #000 100%);
+    }
+    .pulse-scan {
+      width: 140px;
+      height: 140px;
+      border: 4px solid var(--danger);
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 2rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .sync-toast {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: var(--success);
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 999px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+      animation: toast-in 0.5s ease forwards, toast-out 0.5s ease 2.5s forwards;
+    }
+    @keyframes toast-in { from { top: -50px; opacity: 0; } to { top: 1rem; opacity: 1; } }
+    @keyframes toast-out { from { top: 1rem; opacity: 1; } to { top: -50px; opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <div id="syncToast" class="hidden sync-toast">Patient Data Synchronized Successfully</div>
+
+  <div id="loadingView">
+    <div class="pulse-scan"></div>
+    <h2 class="text-white font-black text-2xl uppercase tracking-widest animate-pulse">BioSync Secure</h2>
+    <p class="text-slate-400 font-bold mt-4 text-lg">Decrypting Identity Layer...</p>
+  </div>
+
+  <div id="mainContent" class="hidden animate-in fade-in duration-500">
+    <div id="alertBanner" class="hidden flash-critical py-6 px-6 sticky top-0 z-[100] text-center shadow-2xl">
+      <h3 class="text-white font-black text-xl uppercase tracking-[0.25em] flex items-center justify-center space-x-3">
+        <span>⚠️</span>
+        <span id="alertMsg">CRITICAL ALERT</span>
+        <span>⚠️</span>
+      </h3>
+    </div>
+
+    <main class="container mx-auto max-w-lg px-6 py-12 space-y-10">
+      <section class="bg-zinc-900/60 rounded-[3.5rem] p-12 border border-white/10 text-center">
+        <span class="label-caps">Identity Profile</span>
+        <h1 id="name" class="text-5xl font-black mb-8 tracking-tighter uppercase">--</h1>
+        
+        <div class="flex justify-around mb-10">
+          <div class="text-center">
+            <span class="label-caps">Age</span>
+            <p id="age" class="data-text">--</p>
+          </div>
+          <div class="text-center">
+            <span class="label-caps">Gender</span>
+            <p id="gender" class="data-text">--</p>
+          </div>
+        </div>
+
+        <div class="py-8">
+          <span class="label-caps text-red-500">Blood Type</span>
+          <div id="bloodGroup" class="blood-giant text-center mx-auto">--</div>
+        </div>
+      </section>
+
+      <div class="space-y-10">
+        <section id="alCard" class="section-card section-red">
+          <div class="flex items-center space-x-4 mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h2 class="label-caps !text-red-500 !mb-0 text-base">Allergies</h2>
+          </div>
+          <p id="al" class="data-text text-red-50 text-3xl">--</p>
+        </section>
+
+        <section id="ccCard" class="section-card section-yellow">
+          <div class="flex items-center space-x-4 mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h2 class="label-caps !text-yellow-500 !mb-0 text-base">Chronic Conditions</h2>
+          </div>
+          <p id="cc" class="data-text text-yellow-50 text-3xl">--</p>
+        </section>
+
+        <section class="section-card section-green space-y-10">
+          <div>
+            <div class="flex items-center space-x-4 mb-5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.618.309a6 6 0 01-3.86.517l-2.388-.477a2 2 0 00-1.022.547l-1.168 1.168a2 2 0 001.414 3.414h15a2 2 0 001.414-3.414l-1.168-1.168z" />
+              </svg>
+              <h2 class="label-caps !text-green-500 !mb-0 text-base">Current Medications</h2>
+            </div>
+            <p id="m" class="data-text text-green-50 text-3xl">--</p>
+          </div>
+          
+          <div class="pt-6 border-t border-green-500/10">
+            <span class="label-caps text-green-500/40">Past Surgeries</span>
+            <p id="s" class="font-black text-2xl text-green-50/80">--</p>
+          </div>
+        </section>
+      </div>
+
+      <div class="pt-16 flex flex-col items-center opacity-30 text-center">
+        <p class="text-[10px] font-black uppercase tracking-[0.5em] mb-3">BioSync Medical Protocol v3.1</p>
+        <p id="ts" class="text-[10px] font-black uppercase tracking-[0.4em]">SYNCED --:--</p>
+      </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 right-0 p-8 bg-black/95 backdrop-blur-3xl border-t border-white/10 z-[200] safe-area-bottom">
+      <div class="container mx-auto max-w-lg flex flex-col space-y-5">
+        <a id="smsBtn" href="sms:?body=Emergency" class="w-full bg-yellow-400 text-black py-6 rounded-[2.5rem] font-black text-xl flex items-center justify-center space-x-4 transition-transform active:scale-95 shadow-xl shadow-yellow-900/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a.5.5 0 01-1 0V5a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h3a.5.5 0 010 1H4a2 2 0 01-2-2V5z" />
+            <path d="M15 7a1 1 0 011 1v4.586l1.293-1.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 011.414-1.414L14 12.586V8a1 1 0 011-1z" />
+          </svg>
+          <span>SEND SOS TEXT</span>
+        </a>
+        <a id="callBtn" href="tel:" class="w-full bg-red-600 text-white py-7 rounded-[2.5rem] font-black text-2xl flex items-center justify-center space-x-4 shadow-[0_20px_60px_-15px_rgba(239,68,68,0.6)] transition-transform active:scale-95">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 011.059.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+          </svg>
+          <span>EMERGENCY CALL</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const getParam = (key) => {
+      const v = params.get(key);
+      return (v && v !== 'null' && v !== 'undefined' && v.trim() !== '') ? decodeURIComponent(v) : null;
+    };
+
+    const name = getParam('n');
+    const blood = getParam('bg');
+
+    if (name || blood) {
+      document.getElementById('syncToast').classList.remove('hidden');
+      alert("Patient Data Synchronized Successfully");
+
+      document.getElementById('loadingView').classList.add('hidden');
+      document.getElementById('mainContent').classList.remove('hidden');
+
+      document.getElementById('name').textContent = name || 'ANONYMOUS';
+      document.getElementById('bloodGroup').textContent = blood || '--';
+      document.getElementById('age').textContent = getParam('a') || '--';
+      document.getElementById('gender').textContent = getParam('g') || '--';
+      
+      const allergies = getParam('al');
+      const chronic = getParam('cc');
+      const meds = getParam('m');
+      const surgeries = getParam('s');
+      
+      document.getElementById('al').textContent = allergies || 'NONE REPORTED';
+      document.getElementById('cc').textContent = chronic || 'NONE REPORTED';
+      document.getElementById('m').textContent = meds || 'NONE REPORTED';
+      document.getElementById('s').textContent = surgeries || 'NONE REPORTED';
+
+      const contact = getParam('ec');
+      if (contact) {
+        const phone = contact.replace(/\D/g, '');
+        document.getElementById('callBtn').href = `tel:${phone}`;
+        const bodyText = `This person is in a medical emergency. Please respond immediately. Info: Blood ${blood}, Allergies: ${allergies || 'None'}.`;
+        document.getElementById('smsBtn').href = `sms:${phone}?body=${encodeURIComponent(bodyText)}`;
+      }
+
+      const safe = ['none', 'no', 'n/a', 'unknown', 'none reported', '--'];
+      const alertNeeded = (allergies && !safe.includes(allergies.toLowerCase())) || (chronic && !safe.includes(chronic.toLowerCase()));
+
+      if (alertNeeded) {
+        document.getElementById('alertBanner').classList.remove('hidden');
+        if (allergies && !safe.includes(allergies.toLowerCase())) {
+          document.getElementById('alertMsg').textContent = `⚠️ CRITICAL: SEVERE ALLERGY - ${allergies.toUpperCase()}`;
+        } else {
+          document.getElementById('alertMsg').textContent = `⚠️ CRITICAL: ${chronic.toUpperCase()}`;
+        }
+      } else {
+        const alCard = document.getElementById('alCard');
+        alCard.classList.remove('section-red');
+        alCard.classList.add('bg-zinc-900', 'border-zinc-800');
+        alCard.querySelector('h2').classList.replace('!text-red-500', '!text-zinc-600');
+      }
+
+      const d = new Date();
+      document.getElementById('ts').textContent = `SYNCED ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} - ${d.toLocaleDateString()}`;
+    }
+  </script>
+</body>
+</html>

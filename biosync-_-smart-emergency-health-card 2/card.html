@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BIO-SYNC | EMERGENCY MEDICAL IDENTITY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif;
+      background-color: #000;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    .flash-red {
+      animation: flash-red 1s infinite;
+    }
+    @keyframes flash-red {
+      0%, 100% { background-color: #ef4444; }
+      50% { background-color: #7f1d1d; }
+    }
+    .label-caps { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: #64748b; margin-bottom: 4px; display: block; }
+    .data-bold { font-weight: 900; font-size: 1.5rem; line-height: 1.2; letter-spacing: -0.02em; }
+    .emergency-card { border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s ease; }
+    .emergency-card:active { transform: scale(0.98); }
+    
+    .pulse-btn {
+      animation: pulse-shadow 2s infinite;
+    }
+    @keyframes pulse-shadow {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    /* Scanning State Styles */
+    #scannerView {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      background: radial-gradient(circle at center, #1e1b4b 0%, #000 100%);
+    }
+    .scan-ring {
+      width: 120px;
+      height: 120px;
+      border: 4px solid #ef4444;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+      margin-bottom: 2rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-40">
+
+  <!-- Empty State / Loading - Shown if accessed without params -->
+  <div id="scannerView" class="">
+    <div class="scan-ring"></div>
+    <h2 class="text-white font-black text-xl uppercase tracking-widest animate-pulse">BioSync Secure</h2>
+    <p class="text-slate-500 font-bold mt-2">Searching for Medical Identity...</p>
+  </div>
+
+  <!-- Real Content (Initially Hidden) -->
+  <div id="mainContent" class="hidden">
+    <!-- Flashing Critical Banner -->
+    <div id="dangerBanner" class="hidden flash-red text-white py-4 px-6 text-center font-black uppercase tracking-[0.2em] sticky top-0 z-50 shadow-2xl">
+      ⚠️ CRITICAL: <span id="bannerAllergy">ALERGEN REPORTED</span> ⚠️
+    </div>
+
+    <main class="container mx-auto max-w-lg px-5 py-8 space-y-6">
+      <!-- Identity Header -->
+      <section class="bg-zinc-900 p-8 rounded-[2rem] border-l-8 border-red-600">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <span class="label-caps">Full Legal Name</span>
+            <h1 id="fullName" class="text-4xl font-black mb-1">--</h1>
+            <div class="flex space-x-6 mt-4">
+              <div>
+                <span class="label-caps">Current Age</span>
+                <p id="age" class="data-bold">--</p>
+              </div>
+              <div>
+                <span class="label-caps">Gender</span>
+                <p id="gender" class="data-bold">--</p>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+             <span class="label-caps">Blood Group</span>
+             <p id="bloodGroup" class="text-7xl font-black text-red-600 leading-none">--</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Color Coded Grid -->
+      <div class="grid grid-cols-1 gap-6">
+        
+        <!-- Allergies (RED) -->
+        <section id="allergyCard" class="bg-red-600/10 border-2 border-red-600 p-6 rounded-[2rem]">
+          <div class="flex items-center space-x-3 mb-3 text-red-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h2 class="label-caps !text-red-500 !mb-0">Known Allergies</h2>
+          </div>
+          <p id="allergies" class="data-bold text-red-100">--</p>
+        </section>
+
+        <!-- Chronic (YELLOW) -->
+        <section id="chronicCard" class="bg-yellow-600/10 border-2 border-yellow-600 p-6 rounded-[2rem]">
+          <div class="flex items-center space-x-3 mb-3 text-yellow-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h2 class="label-caps !text-yellow-500 !mb-0">Chronic Conditions</h2>
+          </div>
+          <p id="chronic" class="data-bold text-yellow-50">--</p>
+        </section>
+
+        <!-- Physical Metrics (BLUE/CYAN) -->
+        <section class="bg-blue-600/10 border-2 border-blue-600 p-6 rounded-[2rem]">
+          <div class="flex items-center space-x-3 mb-3 text-blue-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            <h2 class="label-caps !text-blue-500 !mb-0">Physical Metrics</h2>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <span class="label-caps !text-[10px]">Height</span>
+              <p id="height" class="data-bold text-blue-50">--</p>
+            </div>
+            <div>
+              <span class="label-caps !text-[10px]">Weight</span>
+              <p id="weight" class="data-bold text-blue-50">--</p>
+            </div>
+            <div>
+              <span class="label-caps !text-[10px]">BMI</span>
+              <p id="bmi" class="data-bold text-blue-50">--</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Meds, Surgeries (GREEN) -->
+        <section class="bg-green-600/10 border-2 border-green-600 p-6 rounded-[2rem] space-y-6">
+          <div>
+            <div class="flex items-center space-x-3 mb-2 text-green-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.618.309a6 6 0 01-3.86.517l-2.388-.477a2 2 0 00-1.022.547l-1.168 1.168a2 2 0 001.414 3.414h15a2 2 0 001.414-3.414l-1.168-1.168z" />
+              </svg>
+              <h2 class="label-caps !text-green-500 !mb-0">Current Medications</h2>
+            </div>
+            <p id="meds" class="data-bold text-green-50">--</p>
+          </div>
+
+          <div>
+             <span class="label-caps text-green-500/60">Past Surgeries</span>
+             <p id="surgeries" class="data-bold text-green-100">--</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Professional Footer Info -->
+      <div class="pt-10 flex justify-between items-center opacity-40">
+        <p class="text-[10px] font-black uppercase tracking-[0.3em]">BioSync Medical Protocol v3.1</p>
+        <p id="timestamp" class="text-[10px] font-black uppercase tracking-[0.3em]">Verified --:--</p>
+      </div>
+    </main>
+
+    <!-- Emergency Actions Panel -->
+    <div class="fixed bottom-0 left-0 right-0 p-5 bg-zinc-900 border-t border-white/10 space-y-3 z-50 safe-area-bottom">
+      <div class="container mx-auto max-w-lg flex flex-col space-y-3">
+        <a id="smsButton" href="sms:?body=Emergency" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg flex items-center justify-center space-x-3 transition-transform">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a.5.5 0 01-1 0V5a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h3a.5.5 0 010 1H4a2 2 0 01-2-2V5z" />
+            <path d="M15 7a1 1 0 011 1v4.586l1.293-1.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 011.414-1.414L14 12.586V8a1 1 0 011-1z" />
+          </svg>
+          <span>SEND SOS SMS</span>
+        </a>
+        <a id="callButton" href="tel:" class="pulse-btn w-full bg-red-600 text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center space-x-3 shadow-2xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 011.059.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+          </svg>
+          <span>CALL EMERGENCY CONTACT</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // URL Parameter Parsing Logic
+    const params = new URLSearchParams(window.location.search);
+    
+    function getVal(key) {
+      const v = params.get(key);
+      return (v && v !== 'null' && v !== 'undefined' && v.trim() !== '') ? decodeURIComponent(v) : null;
+    }
+
+    const name = getVal('name');
+    const blood = getVal('blood');
+
+    if (name || blood) {
+      document.getElementById('scannerView').classList.add('hidden');
+      document.getElementById('mainContent').classList.remove('hidden');
+
+      document.getElementById('fullName').textContent = name || 'Anonymous Profile';
+      document.getElementById('bloodGroup').textContent = blood || '--';
+      document.getElementById('age').textContent = getVal('age') || '--';
+      document.getElementById('gender').textContent = getVal('gender') || 'N/A';
+      
+      const allergies = getVal('allergies');
+      document.getElementById('allergies').textContent = allergies || 'None Reported';
+      document.getElementById('chronic').textContent = getVal('chronic') || 'None Reported';
+      document.getElementById('meds').textContent = getVal('meds') || 'None Reported';
+      document.getElementById('surgeries').textContent = getVal('surgeries') || 'None Reported';
+
+      // Physical Metrics
+      document.getElementById('height').textContent = getVal('h') ? getVal('h') + ' cm' : '--';
+      document.getElementById('weight').textContent = getVal('w') ? getVal('w') + ' kg' : '--';
+      document.getElementById('bmi').textContent = getVal('bmi') || '--';
+
+      const contact = getVal('contact');
+      if (contact) {
+        const cleanContact = contact.replace(/\D/g, '');
+        document.getElementById('callButton').href = `tel:${cleanContact}`;
+        const smsMsg = `BioSync Emergency: Assistance required for ${name || 'patient'}. Info: Blood ${blood}, Allergies: ${allergies || 'None'}.`;
+        document.getElementById('smsButton').href = `sms:${cleanContact}?body=${encodeURIComponent(smsMsg)}`;
+      }
+
+      const safeTerms = ['none', 'no', 'none reported', 'n/a', 'unknown', '--'];
+      if (allergies && !safeTerms.includes(allergies.toLowerCase().trim())) {
+        document.getElementById('dangerBanner').classList.remove('hidden');
+        document.getElementById('bannerAllergy').textContent = allergies.toUpperCase();
+      } else {
+        document.getElementById('allergyCard').classList.replace('bg-red-600/10', 'bg-zinc-800/50');
+        document.getElementById('allergyCard').classList.replace('border-red-600', 'border-zinc-700');
+      }
+
+      const now = new Date();
+      document.getElementById('timestamp').textContent = `Verified ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    }
+  </script>
+</body>
+</html>

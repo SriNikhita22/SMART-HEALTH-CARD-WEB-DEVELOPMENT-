@@ -1,0 +1,7 @@
+{
+  "name": "BioSync | Smart Emergency Health Card",
+  "description": "A decentralized smart medical identity platform with AI-driven emergency insights.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
